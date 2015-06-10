@@ -1,0 +1,333 @@
+<!-- 
+Questo è lo script se hai GOOGLE ADSENSE.
+Se hai i banner ALTERVISTA, rinomina questo file con un altro nome
+e rinomina il file altervista.html in overall_header_body_before.html
+-->
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+
+<script>
+/*
+ Copyright 2014 Google Inc. All rights reserved.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+
+(function(window) {
+
+  if (!!window.cookieChoices) {
+    return window.cookieChoices;
+  }
+
+  var document = window.document;
+  // IE8 does not support textContent, so we should fallback to innerText.
+  var supportsTextContent = 'textContent' in document.body;
+
+  var cookieChoices = (function() {
+
+    var cookieName = '{COOKIE_COOKIE}';
+    var cookieConsentId = 'cookieChoiceInfo';
+    var dismissLinkId = 'cookieChoiceDismiss';
+
+    function _createHeaderElement(cookieText, dismissText, linkText, linkHref) {
+      var butterBarStyles = 'position:fixed;width:100%;background-color:black;' +
+          'margin:0; left:0; top:0;padding:4px;z-index:1000;text-align:center; color:red;';
+
+      var cookieConsentElement = document.createElement('div');
+      cookieConsentElement.id = cookieConsentId;
+      cookieConsentElement.style.cssText = butterBarStyles;
+      cookieConsentElement.appendChild(_createConsentText(cookieText));
+
+      if (!!linkText && !!linkHref) {
+        cookieConsentElement.appendChild(_createInformationLink(linkText, linkHref));
+      }
+      cookieConsentElement.appendChild(_createDismissLink(dismissText));
+      return cookieConsentElement;
+    }
+
+    function _createDialogElement(cookieText, dismissText, linkText, linkHref) {
+      var glassStyle = 'position:fixed;width:100%;height:100%;z-index:999;' +
+          'top:0;left:0;opacity:0.5;filter:alpha(opacity=50);' +
+          'background-color:#ccc;';
+      var dialogStyle = 'z-index:1000;position:fixed;left:50%;top:50%';
+      var contentStyle = 'position:relative;left:-50%;margin-top:-25%;' +
+          'background-color:#fff;padding:20px;box-shadow:4px 4px 25px #888;';
+
+      var cookieConsentElement = document.createElement('div');
+      cookieConsentElement.id = cookieConsentId;
+
+      var glassPanel = document.createElement('div');
+      glassPanel.style.cssText = glassStyle;
+
+      var content = document.createElement('div');
+      content.style.cssText = contentStyle;
+
+      var dialog = document.createElement('div');
+      dialog.style.cssText = dialogStyle;
+
+      var dismissLink = _createDismissLink(dismissText);
+      dismissLink.style.display = 'block';
+      dismissLink.style.textAlign = 'right';
+      dismissLink.style.marginTop = '8px';
+
+      content.appendChild(_createConsentText(cookieText));
+      if (!!linkText && !!linkHref) {
+        content.appendChild(_createInformationLink(linkText, linkHref));
+      }
+      content.appendChild(dismissLink);
+      dialog.appendChild(content);
+      cookieConsentElement.appendChild(glassPanel);
+      cookieConsentElement.appendChild(dialog);
+      return cookieConsentElement;
+    }
+
+    function _setElementText(element, text) {
+      if (supportsTextContent) {
+        element.textContent = text;
+      } else {
+        element.innerText = text;
+      }
+    }
+
+    function _createConsentText(cookieText) {
+      var consentText = document.createElement('span');
+      _setElementText(consentText, cookieText);
+      return consentText;
+    }
+
+    function _createDismissLink(dismissText) {
+      var dismissLink = document.createElement('a');
+      _setElementText(dismissLink, dismissText);
+      dismissLink.id = dismissLinkId;
+      dismissLink.href = '#';
+      dismissLink.style.marginLeft = '24px';
+      return dismissLink;
+    }
+
+    function _createInformationLink(linkText, linkHref) {
+      var infoLink = document.createElement('a');
+      _setElementText(infoLink, linkText);
+      infoLink.href = linkHref;
+      infoLink.target = '_blank';
+      infoLink.style.marginLeft = '8px';
+      return infoLink;
+    }
+
+    function _dismissLinkClick() {
+      _saveUserPreference();
+      _removeCookieConsent();
+     ACLcaricaBanner();
+      return false;
+    }
+
+    $(window).scroll(function(){
+      var pos = $(this).scrollTop();
+      if (pos > 100) {
+      _dismissLinkClick();
+      }
+    });
+
+    function _showCookieConsent(cookieText, dismissText, linkText, linkHref, isDialog) {
+      if (_shouldDisplayConsent()) {
+        _removeCookieConsent();
+        var consentElement = (isDialog) ?
+            _createDialogElement(cookieText, dismissText, linkText, linkHref) :
+            _createHeaderElement(cookieText, dismissText, linkText, linkHref);
+        var fragment = document.createDocumentFragment();
+        fragment.appendChild(consentElement);
+        document.body.appendChild(fragment.cloneNode(true));
+        document.getElementById(dismissLinkId).onclick = _dismissLinkClick;
+      }
+    }
+
+    function showCookieConsentBar(cookieText, dismissText, linkText, linkHref) {
+      _showCookieConsent(cookieText, dismissText, linkText, linkHref, false);
+    }
+
+    function showCookieConsentDialog(cookieText, dismissText, linkText, linkHref) {
+      _showCookieConsent(cookieText, dismissText, linkText, linkHref, true);
+    }
+
+    function _removeCookieConsent() {
+      var cookieChoiceElement = document.getElementById(cookieConsentId);
+      if (cookieChoiceElement != null) {
+        cookieChoiceElement.parentNode.removeChild(cookieChoiceElement);
+      }
+    }
+
+    function _saveUserPreference() {
+      // Set the cookie expiry to one year after today.
+      var expiryDate = new Date();
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    }
+
+    function _shouldDisplayConsent() {
+      // Display the header only if the cookie has not been set.
+      return !document.cookie.match(new RegExp(cookieName + '=([^;]+)'));
+    }
+
+    var exports = {};
+    exports.showCookieConsentBar = showCookieConsentBar;
+    exports.showCookieConsentDialog = showCookieConsentDialog;
+    return exports;
+  })();
+
+  window.cookieChoices = cookieChoices;
+  return cookieChoices;
+})(this);
+</script> 
+<script>
+/*
+|=============================================================================|
+|=============== Copyright: Mr.Webmaster - www.mrwebmaster.it ================|
+|=============================================================================|
+| Questo script può essere utilizzato e/o redistribuito gratuitamente         |
+| a condizione che non venga rimosso il riferimento all'autore.               |
+|=============================================================================|
+| NON forniamo alcuna garanzia circa il corretto funzionamento dello script,  |
+| ne circa la sua conformità alle policy di Google AdSense e/o al disposto    |
+| normativo della Cookie Law.  MODIFICATO DA BRUNINO.ALTERVISTA.ORG           |
+|=============================================================================|
+*/
+
+var ACLminScroll = 100;
+var ACLcookie = (ACLleggiCookie('{COOKIE_COOKIE}') >= '{TIMESTAMP}' ? true : false)
+var ACLbannerCaricati = (ACLcookie ? true : false)
+
+function ACLscriviCookie(nomeCookie,valoreCookie,durataCookieGG) {
+  var scadenza = new Date();
+  var adesso = new Date();
+  scadenza.setTime(adesso.getTime() + (parseInt(durataCookieGG) * 86400000));
+  document.cookie = nomeCookie + '=' + escape(valoreCookie) + '; expires=' + scadenza.toGMTString() + '; path=/';
+}
+function ACLleggiCookie(nomeCookie) {
+  if (document.cookie.length > 0) {
+    var inizio = document.cookie.indexOf(nomeCookie + "=");
+    if (inizio != -1) {
+      inizio = inizio + nomeCookie.length + 1;
+      var fine = document.cookie.indexOf(";",inizio);
+      if (fine == -1) fine = document.cookie.length;
+      return unescape(document.cookie.substring(inizio,fine));
+    }else{
+       return "";
+    }
+  }
+  return "";
+}
+function ACLcaricaBanner(){
+  ACLbannerCaricati = true;
+  if (!ACLcookie) ACLscriviCookie('{COOKIE_COOKIE}','{TIME_FINAL}',365);
+  var t = 1;
+  $('.adsense-cookie-law').each(function() {
+    var banner = $(this);
+    setTimeout(function(){
+      var c = banner.data('client');
+      var s = banner.data('slot');
+      var w = banner.data('width');
+      var h = banner.data('height');
+      var adsense = '<scr'+'ipt>\n'
+                  + 'google_ad_client = "'+c+'";\n'
+                  + 'google_ad_slot = "'+s+'";\n'
+                  + 'google_ad_width = '+w+';\n'
+                  + 'google_ad_height = '+h+';\n'
+                  + '</scr'+'ipt>';
+      var a = document.createElement('ads'); 
+      var s = document.createElement('script');   
+      var w = document.write;
+      document.write = (function(params) {
+        a.innerHTML = params;
+        document.write = w;
+      });
+      s.setAttribute('type', 'text/javascript');
+      s.setAttribute('src', 'http://pagead2.googlesyndication.com/pagead/show_ads.js');
+      banner.html(adsense).append(a).append(s);
+    }, t);
+    t += 300;
+  });
+}
+  
+$(function() {
+  if (ACLcookie) {
+    ACLcaricaBanner();
+  }else{
+    $(document).click(function(){
+      if (!ACLbannerCaricati) {
+        ACLcaricaBanner();  
+      } 
+    })
+    $(window).scroll(function(){
+      var pos = $(this).scrollTop();
+      if (pos > ACLminScroll && !ACLbannerCaricati) {
+        ACLcaricaBanner();  
+      _dismissLinkClick();
+      }
+    });
+    $('.adsense-cookie-law').each(function() {
+      $(this).css({
+        'background-color': '#CCC',
+        'width': $(this).data('width'),
+        'height': $(this).data('height')
+      });
+    });
+  }   
+});
+</script>
+ 
+<!-- IF not COOKIE_DISPLAY -->
+<!-- IF SCRIPT_NAME eq 'ucp' -->
+<script>
+  document.addEventListener('DOMContentLoaded', function(event) {
+    cookieChoices.showCookieConsentBar('Questo Forum, utilizza cookie; accedendo, cliccando su "Accetto" in questo messaggio, scorrendo la pagina o navigando nel sito acconsenti a scaricare sul tuo browser, tutte le tipologie di cookie presenti in questo Forum.',
+        'I accept - Accetto', '', 'ucp.php?mode=privacy');
+  });
+</script>
+<!-- ELSE -->
+<script>
+  document.addEventListener('DOMContentLoaded', function(event) {
+    cookieChoices.showCookieConsentDialog('Questo Forum, utilizza cookie; accedendo, cliccando su "Accetto" in questo messaggio, scorrendo la pagina o navigando nel sito acconsenti a scaricare sul tuo browser, tutte le tipologie di cookie presenti in questo Forum..',
+        'I accept - Accetto', 'Informations - Informazioni', 'ucp.php?mode=privacy');
+  });
+</script>
+<!-- ENDIF -->
+<noscript><br /><div style="text-align: center; color: white; font-size: 150%; font-weight: bold;">Questo Forum, utilizza cookie; l'accesso, implica la completa accettazione di tutte le tipologie di cookie presenti in questo Forum. <a href="ucp.php?mode=privacy" style="color: white;" target="_blank">Informations - Informazioni</a></div><br /></noscript>
+<!-- ENDIF -->
+
+
+
+
+<!--
+<script>var auto_refresh = setInterval(function(){
+$('#notification_list').load('search.php #notification_list');
+$('#notification_list_button').load('search.php #notification_list_button');
+$('#forum_list_ricarica').load('index.php #forum_list_ricarica');
+$('#whoisonline_ricarica').load('index.php #whoisonline_ricarica');
+}, 5000);</script> -->
+
+
+<!-- IF COOKIE_DISPLAY -->
+<div align=center>
+<script type="text/javascript">
+/* <![CDATA[ */
+document.write('<s'+'cript type="text/javascript" src="http://ad.altervista.org/js.ad/size=728X90/r='+new Date().getTime()+'"><\/s'+'cript>');
+/* ]]> */
+</script>
+</div>
+<!-- ELSE -->
+<div class="adsense-cookie-law"
+   data-client="ca-pub-0000000000000000"
+   data-slot="0000000000"
+   data-width="300"
+   data-height="250"
+   >
+</div>
+<!-- ENDIF -->
